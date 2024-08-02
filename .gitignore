@@ -1,0 +1,122 @@
+# Visual Studio
+.vscode/
+.vs/
+**/.vs/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Build Folders
+bin/
+obj/
+out/
+
+# NuGet
+*.nupkg
+*.snupkg
+.nuget/
+packages/
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Microsoft Visual Studio Code
+.vscode/
+
+# Rider
+.idea/
+
+# Windows image file caches
+Thumbs.db
+ehthumbs.db
+
+# Folder config file
+Desktop.ini
+
+# Recycle Bin used on file shares
+$RECYCLE.BIN/
+
+# Windows Installer files
+*.cab
+*.msi
+*.msm
+*.msp
+
+# Windows shortcuts
+*.lnk
+
+# JetBrains Rider
+.idea/
+
+# DotNet compile time logs
+*.log
+
+# StyleCop
+StyleCopReport.xml
+
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Mono Auto Generated Files
+mono_crash.*
+
+# Windows image file caches
+Thumbs.db
+ehthumbs.db
+
+# Folder config file
+Desktop.ini
+
+# Recycle Bin used on file shares
+$RECYCLE.BIN/
+
+# Windows Installer files
+*.cab
+*.msi
+*.msm
+*.msp
+
+# Windows shortcuts
+*.lnk
+
+# Linux/Mac temporary files
+*~
+
+# dotnet runtime
+*.runtimeconfig.json
+*.runtimeconfig.dev.json
+
+# ASP.NET Scaffolding
+ScaffoldingReadMe.txt
+
+# Entity Framework Migrations
+Migrations/
+
+# Azure Pipelines
+azure-pipelines.yml
+
+# Docker
+**/[Dd]ockerfile
+**/docker-compose.yml
+**/docker-compose.*.yml
+docker-compose.override.yml
+.dockerignore
+
+# Local History
+.localhistory
+
+# NCrunch
+_NCrunch_*
+*.ncrunchsolution
+
+# EF Core Tools
+*.SeedData.json
+
+# Resharper
+_ReSharper.Caches/
