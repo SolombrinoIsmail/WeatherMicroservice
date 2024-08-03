@@ -54,8 +54,15 @@ namespace WeatherMicroservice.Api
 
             var app = builder.Build();
 
+            // Apply migrations at startup
+            using (var scope = app.Services.CreateScope())
+            {
+                var dbContext = scope.ServiceProvider.GetRequiredService<WeatherDbContext>();
+                dbContext.Database.Migrate();
+            }
+
             // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
+            if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Docker"))
             {
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
@@ -66,7 +73,6 @@ namespace WeatherMicroservice.Api
                 });
             }
 
-            app.UseHttpsRedirection();
             app.UseAuthorization();
             app.MapControllers();
             app.Run();
