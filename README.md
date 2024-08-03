@@ -9,7 +9,6 @@ WeatherMicroservice is a .NET 8 microservice for fetching and storing weather da
 - [Building the Project](#building-the-project)
 - [Running the Application](#running-the-application)
 - [Running with Docker](#running-with-docker)
-- [API Documentation](#api-documentation)
 
 ## Prerequisites
 
@@ -74,7 +73,3 @@ WeatherMicroservice is a .NET 8 microservice for fetching and storing weather da
 3. **Access the Swagger UI:**
 
     Open your browser and navigate to `http://localhost:5122` to view and interact with the API documentation.
-
-## API Documentation
-
-The API documentation is available through Swagger UI. After running the application, navigate to:
