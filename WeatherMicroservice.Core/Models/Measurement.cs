@@ -1,6 +1,6 @@
 using WeatherMicroservice.Core.Enums;
 
-namespace WeatherMicroservice.Core.Entities
+namespace WeatherMicroservice.Core.Models
 {
     public class Measurement
     {

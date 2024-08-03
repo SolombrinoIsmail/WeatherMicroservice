@@ -1,5 +1,5 @@
-using WeatherMicroservice.Core.Entities;
 using WeatherMicroservice.Core.Enums;
+using WeatherMicroservice.Core.Models;
 
 namespace WeatherMicroservice.Core.Interfaces
 {

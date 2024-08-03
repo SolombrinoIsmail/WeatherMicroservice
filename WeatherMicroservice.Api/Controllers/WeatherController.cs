@@ -1,8 +1,10 @@
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using WeatherMicroservice.Core.Interfaces;
 using Swashbuckle.AspNetCore.Annotations;
 using System.ComponentModel.DataAnnotations;
 using WeatherMicroservice.Core.Enums;
+using WeatherMicroservice.Api.Dtos;
 
 namespace WeatherMicroservice.Api.Controllers
 {
@@ -11,10 +13,12 @@ namespace WeatherMicroservice.Api.Controllers
     public class WeatherController : ControllerBase
     {
         private readonly IWeatherService weatherService;
+        private readonly IMapper mapper;
 
-        public WeatherController(IWeatherService weatherService)
+        public WeatherController(IWeatherService weatherService, IMapper mapper)
         {
             this.weatherService = weatherService;
+            this.mapper = mapper;
         }
 
         [HttpPost("fetch-previous-day")]
@@ -37,7 +41,8 @@ namespace WeatherMicroservice.Api.Controllers
             {
                 return NotFound();
             }
-            return Ok(measurements);
+            var measurementDtos = mapper.Map<List<MeasurementDto>>(measurements);
+            return Ok(measurementDtos);
         }
 
         [HttpGet("measurements/highest")]
@@ -58,7 +63,8 @@ namespace WeatherMicroservice.Api.Controllers
             {
                 return NotFound();
             }
-            return Ok(highestMeasurement);
+            var highestMeasurementDto = mapper.Map<MeasurementDto>(highestMeasurement);
+            return Ok(highestMeasurementDto);
         }
 
         [HttpGet("measurements/lowest")]
@@ -79,7 +85,8 @@ namespace WeatherMicroservice.Api.Controllers
             {
                 return NotFound();
             }
-            return Ok(lowestMeasurement);
+            var lowestMeasurementDto = mapper.Map<MeasurementDto>(lowestMeasurement);
+            return Ok(lowestMeasurementDto);
         }
 
         [HttpGet("measurements/average")]
