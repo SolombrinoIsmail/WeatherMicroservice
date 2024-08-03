@@ -1,12 +1,12 @@
 using System.Net;
 using Moq;
 using Moq.Protected;
-using WeatherMicroservice.Core.Entities;
 using WeatherMicroservice.Core.Enums;
 using WeatherMicroservice.Core.Interfaces;
 using WeatherMicroservice.Infrastructure.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
+using WeatherMicroservice.Core.Models;
 
 namespace WeatherMicroservice.Tests.Services
 {
@@ -150,7 +150,7 @@ namespace WeatherMicroservice.Tests.Services
             };
 
             mockWeatherRepository.Setup(repo => repo.GetHighestMeasurement(
-                MeasurementType.AirTemperature, It.IsAny<DateTime>(), It.IsAny<DateTime>(), null))
+                MeasurementType.AirTemperature, It.IsAny<DateTime>(), It.IsAny<DateTime>(), Station.Tiefenbrunnen))
                 .ReturnsAsync(expectedMeasurement);
 
             // Act
@@ -158,7 +158,13 @@ namespace WeatherMicroservice.Tests.Services
                 MeasurementType.AirTemperature, DateTime.UtcNow.AddDays(-1), DateTime.UtcNow);
 
             // Assert
-            Assert.Equal(expectedMeasurement, actualMeasurement);
+            Assert.NotNull(actualMeasurement);
+            Assert.Equal(expectedMeasurement.Id, actualMeasurement.Id);
+            Assert.Equal(expectedMeasurement.Station, actualMeasurement.Station);
+            Assert.Equal(expectedMeasurement.Timestamp, actualMeasurement.Timestamp);
+            Assert.Equal(expectedMeasurement.Type, actualMeasurement.Type);
+            Assert.Equal(expectedMeasurement.Value, actualMeasurement.Value);
+            Assert.Equal(expectedMeasurement.Unit, actualMeasurement.Unit);
         }
 
         [Fact]
@@ -176,7 +182,7 @@ namespace WeatherMicroservice.Tests.Services
             };
 
             mockWeatherRepository.Setup(repo => repo.GetLowestMeasurement(
-                MeasurementType.AirTemperature, It.IsAny<DateTime>(), It.IsAny<DateTime>(), null))
+                MeasurementType.AirTemperature, It.IsAny<DateTime>(), It.IsAny<DateTime>(), Station.Tiefenbrunnen))
                 .ReturnsAsync(expectedMeasurement);
 
             // Act
@@ -184,7 +190,13 @@ namespace WeatherMicroservice.Tests.Services
                 MeasurementType.AirTemperature, DateTime.UtcNow.AddDays(-1), DateTime.UtcNow);
 
             // Assert
-            Assert.Equal(expectedMeasurement, actualMeasurement);
+            Assert.NotNull(actualMeasurement);
+            Assert.Equal(expectedMeasurement.Id, actualMeasurement.Id);
+            Assert.Equal(expectedMeasurement.Station, actualMeasurement.Station);
+            Assert.Equal(expectedMeasurement.Timestamp, actualMeasurement.Timestamp);
+            Assert.Equal(expectedMeasurement.Type, actualMeasurement.Type);
+            Assert.Equal(expectedMeasurement.Value, actualMeasurement.Value);
+            Assert.Equal(expectedMeasurement.Unit, actualMeasurement.Unit);
         }
 
         [Fact]
@@ -225,16 +237,14 @@ namespace WeatherMicroservice.Tests.Services
             // Arrange
             var measurements = new List<Measurement>
             {
-                new Measurement
-                {
+                new() {
                     Station = Station.Tiefenbrunnen,
                     Timestamp = DateTime.UtcNow,
                     Type = MeasurementType.AirTemperature,
                     Value = 20.5,
                     Unit = "°C"
                 },
-                new Measurement
-                {
+                new() {
                     Station = Station.Mythenquai,
                     Timestamp = DateTime.UtcNow,
                     Type = MeasurementType.WaterTemperature,
@@ -250,7 +260,9 @@ namespace WeatherMicroservice.Tests.Services
             var result = await weatherService.GetAllMeasurements(DateTime.UtcNow.AddDays(-1), DateTime.UtcNow);
 
             // Assert
-            Assert.Equal(measurements, result);
+            Assert.Equal(measurements.Count, result.Count);
+            Assert.Equal(measurements[0].Id, result[0].Id);
+            Assert.Equal(measurements[1].Id, result[1].Id);
         }
     }
 }

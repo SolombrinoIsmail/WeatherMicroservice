@@ -1,10 +1,10 @@
 using Newtonsoft.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
-using WeatherMicroservice.Core.Entities;
 using WeatherMicroservice.Core.Interfaces;
 using WeatherMicroservice.Infrastructure.Models;
 using WeatherMicroservice.Core.Enums;
+using WeatherMicroservice.Core.Models;
 
 namespace WeatherMicroservice.Infrastructure.Services
 {

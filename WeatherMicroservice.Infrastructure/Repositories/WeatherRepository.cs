@@ -1,8 +1,8 @@
-using WeatherMicroservice.Core.Entities;
 using WeatherMicroservice.Core.Interfaces;
 using WeatherMicroservice.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using WeatherMicroservice.Core.Enums;
+using WeatherMicroservice.Core.Models;
 
 namespace WeatherMicroservice.Infrastructure.Repositories
 {

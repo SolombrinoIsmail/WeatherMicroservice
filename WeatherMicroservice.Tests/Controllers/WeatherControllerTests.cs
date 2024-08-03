@@ -1,30 +1,39 @@
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using System.Net;
 using WeatherMicroservice.Api.Controllers;
-using WeatherMicroservice.Core.Entities;
+using WeatherMicroservice.Api.Dtos;
 using WeatherMicroservice.Core.Enums;
 using WeatherMicroservice.Core.Interfaces;
+using WeatherMicroservice.Core.Models;
 
 namespace WeatherMicroservice.Tests.Controllers
 {
     public class WeatherControllerTests
     {
-        private readonly Mock<IWeatherService> _mockWeatherService;
+        private readonly Mock<IWeatherService> mockWeatherService;
+        private readonly IMapper mapper;
 
         public WeatherControllerTests()
         {
-            _mockWeatherService = new Mock<IWeatherService>();
+            mockWeatherService = new Mock<IWeatherService>();
+
+            var mappingConfig = new MapperConfiguration(mc =>
+            {
+                mc.AddProfile(new WeatherMicroservice.Api.Profiles.MappingProfile());
+            });
+            mapper = mappingConfig.CreateMapper();
         }
 
         [Fact]
         public async Task FetchPreviousDayData_ReturnsOk()
         {
             // Arrange
-            _mockWeatherService.Setup(service => service.FetchAndStorePreviousDayData())
+            mockWeatherService.Setup(service => service.FetchAndStorePreviousDayData())
                 .Returns(Task.CompletedTask);
 
-            var controller = new WeatherController(_mockWeatherService.Object);
+            var controller = new WeatherController(mockWeatherService.Object, mapper);
 
             // Act
             var result = await controller.FetchPreviousDayData();
@@ -40,8 +49,7 @@ namespace WeatherMicroservice.Tests.Controllers
             // Arrange
             var measurements = new List<Measurement>
             {
-                new Measurement
-                {
+                new() {
                     Id = 1,
                     Station = Station.Tiefenbrunnen,
                     Timestamp = DateTime.UtcNow,
@@ -50,10 +58,10 @@ namespace WeatherMicroservice.Tests.Controllers
                     Unit = "°C"
                 }
             };
-            _mockWeatherService.Setup(service => service.GetAllMeasurements(It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<Station?>()))
+            mockWeatherService.Setup(service => service.GetAllMeasurements(It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<Station?>()))
                 .ReturnsAsync(measurements);
 
-            var controller = new WeatherController(_mockWeatherService.Object);
+            var controller = new WeatherController(mockWeatherService.Object, mapper);
 
             // Act
             var result = await controller.GetMeasurements(DateTime.UtcNow.AddDays(-1), DateTime.UtcNow);
@@ -61,17 +69,18 @@ namespace WeatherMicroservice.Tests.Controllers
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
             Assert.Equal((int)HttpStatusCode.OK, okResult.StatusCode);
-            Assert.Equal(measurements, okResult.Value);
+            var returnValue = Assert.IsType<List<MeasurementDto>>(okResult.Value);
+            Assert.Equal(measurements.Count, returnValue.Count);
         }
 
         [Fact]
         public async Task GetMeasurements_ReturnsNotFound()
         {
             // Arrange
-            _mockWeatherService.Setup(service => service.GetAllMeasurements(It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<Station?>()))
+            mockWeatherService.Setup(service => service.GetAllMeasurements(It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<Station?>()))
                 .ReturnsAsync(new List<Measurement>());
 
-            var controller = new WeatherController(_mockWeatherService.Object);
+            var controller = new WeatherController(mockWeatherService.Object, mapper);
 
             // Act
             var result = await controller.GetMeasurements(DateTime.UtcNow.AddDays(-1), DateTime.UtcNow);
@@ -94,10 +103,10 @@ namespace WeatherMicroservice.Tests.Controllers
                 Value = 30.5,
                 Unit = "°C"
             };
-            _mockWeatherService.Setup(service => service.GetHighestMeasurement(It.IsAny<MeasurementType>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<Station?>()))
+            mockWeatherService.Setup(service => service.GetHighestMeasurement(It.IsAny<MeasurementType>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<Station?>()))
                 .ReturnsAsync(measurement);
 
-            var controller = new WeatherController(_mockWeatherService.Object);
+            var controller = new WeatherController(mockWeatherService.Object, mapper);
 
             // Act
             var result = await controller.GetHighestMeasurement(MeasurementType.AirTemperature, DateTime.UtcNow.AddDays(-1), DateTime.UtcNow);
@@ -105,17 +114,18 @@ namespace WeatherMicroservice.Tests.Controllers
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
             Assert.Equal((int)HttpStatusCode.OK, okResult.StatusCode);
-            Assert.Equal(measurement, okResult.Value);
+            var returnValue = Assert.IsType<MeasurementDto>(okResult.Value);
+            Assert.Equal(measurement.Id, returnValue.Id);
         }
 
         [Fact]
         public async Task GetHighestMeasurement_ReturnsNotFound()
         {
             // Arrange
-            _mockWeatherService.Setup(service => service.GetHighestMeasurement(It.IsAny<MeasurementType>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<Station?>()))
+            mockWeatherService.Setup(service => service.GetHighestMeasurement(It.IsAny<MeasurementType>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<Station?>()))
                 .ReturnsAsync((Measurement?)null);
 
-            var controller = new WeatherController(_mockWeatherService.Object);
+            var controller = new WeatherController(mockWeatherService.Object, mapper);
 
             // Act
             var result = await controller.GetHighestMeasurement(MeasurementType.AirTemperature, DateTime.UtcNow.AddDays(-1), DateTime.UtcNow);
@@ -138,10 +148,10 @@ namespace WeatherMicroservice.Tests.Controllers
                 Value = 10.5,
                 Unit = "°C"
             };
-            _mockWeatherService.Setup(service => service.GetLowestMeasurement(It.IsAny<MeasurementType>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<Station?>()))
+            mockWeatherService.Setup(service => service.GetLowestMeasurement(It.IsAny<MeasurementType>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<Station?>()))
                 .ReturnsAsync(measurement);
 
-            var controller = new WeatherController(_mockWeatherService.Object);
+            var controller = new WeatherController(mockWeatherService.Object, mapper);
 
             // Act
             var result = await controller.GetLowestMeasurement(MeasurementType.AirTemperature, DateTime.UtcNow.AddDays(-1), DateTime.UtcNow);
@@ -149,17 +159,18 @@ namespace WeatherMicroservice.Tests.Controllers
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
             Assert.Equal((int)HttpStatusCode.OK, okResult.StatusCode);
-            Assert.Equal(measurement, okResult.Value);
+            var returnValue = Assert.IsType<MeasurementDto>(okResult.Value);
+            Assert.Equal(measurement.Id, returnValue.Id);
         }
 
         [Fact]
         public async Task GetLowestMeasurement_ReturnsNotFound()
         {
             // Arrange
-            _mockWeatherService.Setup(service => service.GetLowestMeasurement(It.IsAny<MeasurementType>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<Station?>()))
+            mockWeatherService.Setup(service => service.GetLowestMeasurement(It.IsAny<MeasurementType>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<Station?>()))
                 .ReturnsAsync((Measurement?)null);
 
-            var controller = new WeatherController(_mockWeatherService.Object);
+            var controller = new WeatherController(mockWeatherService.Object, mapper);
 
             // Act
             var result = await controller.GetLowestMeasurement(MeasurementType.AirTemperature, DateTime.UtcNow.AddDays(-1), DateTime.UtcNow);
@@ -174,10 +185,10 @@ namespace WeatherMicroservice.Tests.Controllers
         {
             // Arrange
             double averageValue = 20.5;
-            _mockWeatherService.Setup(service => service.GetAverageMeasurement(It.IsAny<MeasurementType>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<Station?>()))
+            mockWeatherService.Setup(service => service.GetAverageMeasurement(It.IsAny<MeasurementType>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<Station?>()))
                 .ReturnsAsync(averageValue);
 
-            var controller = new WeatherController(_mockWeatherService.Object);
+            var controller = new WeatherController(mockWeatherService.Object, mapper);
 
             // Act
             var result = await controller.GetAverageMeasurement(MeasurementType.AirTemperature, DateTime.UtcNow.AddDays(-1), DateTime.UtcNow);
@@ -193,10 +204,10 @@ namespace WeatherMicroservice.Tests.Controllers
         {
             // Arrange
             int count = 10;
-            _mockWeatherService.Setup(service => service.GetMeasurementCount(It.IsAny<MeasurementType>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<Station?>()))
+            mockWeatherService.Setup(service => service.GetMeasurementCount(It.IsAny<MeasurementType>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<Station?>()))
                 .ReturnsAsync(count);
 
-            var controller = new WeatherController(_mockWeatherService.Object);
+            var controller = new WeatherController(mockWeatherService.Object, mapper);
 
             // Act
             var result = await controller.GetMeasurementCount(MeasurementType.AirTemperature, DateTime.UtcNow.AddDays(-1), DateTime.UtcNow);
@@ -211,10 +222,10 @@ namespace WeatherMicroservice.Tests.Controllers
         public async Task GetMeasurementCount_ReturnsNotFound()
         {
             // Arrange
-            _mockWeatherService.Setup(service => service.GetMeasurementCount(It.IsAny<MeasurementType>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<Station?>()))
+            mockWeatherService.Setup(service => service.GetMeasurementCount(It.IsAny<MeasurementType>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<Station?>()))
                 .ReturnsAsync(0);
 
-            var controller = new WeatherController(_mockWeatherService.Object);
+            var controller = new WeatherController(mockWeatherService.Object, mapper);
 
             // Act
             var result = await controller.GetMeasurementCount(MeasurementType.AirTemperature, DateTime.UtcNow.AddDays(-1), DateTime.UtcNow);

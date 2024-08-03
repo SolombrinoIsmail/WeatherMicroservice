@@ -29,6 +29,9 @@ namespace WeatherMicroservice.Api
             builder.Services.AddDbContext<WeatherDbContext>(options =>
                 options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+            // Add AutoMapper
+            builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
             // Add Swagger/OpenAPI support
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(c =>
@@ -71,6 +74,10 @@ namespace WeatherMicroservice.Api
                     c.SwaggerEndpoint("/swagger/v1/swagger.json", "Weather API V1");
                     c.RoutePrefix = string.Empty;
                 });
+            }
+            else
+            {
+                app.UseHttpsRedirection();
             }
 
             app.UseAuthorization();
