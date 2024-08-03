@@ -22,27 +22,52 @@ namespace WeatherMicroservice.Api.Controllers
         }
 
         [HttpPost("fetch-previous-day")]
-        [SwaggerOperation(Summary = "Fetch weather data for the previous day from specified stations.")]
+        [SwaggerOperation(
+            Summary = "Fetch weather data for the previous day from specified stations.",
+            Description = "Fetches weather data for the previous day from Tiefenbrunnen and Mythenquai stations and stores it in the database."
+        )]
+        [SwaggerResponse(200, "Weather data for the previous day was successfully fetched and stored.")]
+        [SwaggerResponse(500, "An error occurred while fetching or storing the weather data.")]
         public async Task<IActionResult> FetchPreviousDayData()
         {
-            await weatherService.FetchAndStorePreviousDayData();
-            return Ok();
+            try
+            {
+                await weatherService.FetchAndStorePreviousDayData();
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred while fetching or storing the weather data: {ex.Message}");
+            }
         }
 
         [HttpGet("measurements")]
-        [SwaggerOperation(Summary = "Get all stored measurements.")]
+        [SwaggerOperation(
+            Summary = "Get all stored measurements.",
+            Description = "Retrieves all stored measurements within the specified date range. Optionally, filter by station."
+        )]
+        [SwaggerResponse(200, "Stored measurements were successfully retrieved.", typeof(List<MeasurementDto>))]
+        [SwaggerResponse(404, "No measurements found for the specified criteria.")]
+        [SwaggerResponse(500, "An error occurred while retrieving the measurements.")]
         public async Task<ActionResult> GetMeasurements(
             [FromQuery, Required, DataType(DataType.Date), SwaggerParameter("The start date for the data range in YYYY-MM-DD format.", Required = true)] DateTime startDate,
             [FromQuery, Required, DataType(DataType.Date), SwaggerParameter("The end date for the data range in YYYY-MM-DD format.", Required = true)] DateTime endDate,
             [FromQuery, SwaggerParameter("Optional station filter.")] Station? station = null)
         {
-            var measurements = await weatherService.GetAllMeasurements(startDate, endDate, station);
-            if (measurements == null || measurements.Count == 0)
+            try
             {
-                return NotFound();
+                var measurements = await weatherService.GetAllMeasurements(startDate, endDate, station);
+                if (measurements == null || measurements.Count == 0)
+                {
+                    return NotFound();
+                }
+                var measurementDtos = mapper.Map<List<MeasurementDto>>(measurements);
+                return Ok(measurementDtos);
             }
-            var measurementDtos = mapper.Map<List<MeasurementDto>>(measurements);
-            return Ok(measurementDtos);
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred while retrieving the measurements: {ex.Message}");
+            }
         }
 
         [HttpGet("measurements/highest")]
@@ -52,19 +77,27 @@ namespace WeatherMicroservice.Api.Controllers
         )]
         [SwaggerResponse(200, "The highest measurement was successfully retrieved.")]
         [SwaggerResponse(404, "No measurements found for the specified criteria.")]
+        [SwaggerResponse(500, "An error occurred while retrieving the highest measurement.")]
         public async Task<ActionResult> GetHighestMeasurement(
             [FromQuery, Required, SwaggerParameter("The type of measurement.", Required = true)] MeasurementType type,
             [FromQuery, Required, DataType(DataType.Date), SwaggerParameter("The start date for the data range in YYYY-MM-DD format.", Required = true)] DateTime startDate,
             [FromQuery, Required, DataType(DataType.Date), SwaggerParameter("The end date for the data range in YYYY-MM-DD format.", Required = true)] DateTime endDate,
             [FromQuery, SwaggerParameter("Optional station filter.")] Station? station = null)
         {
-            var highestMeasurement = await weatherService.GetHighestMeasurement(type, startDate, endDate, station);
-            if (highestMeasurement == null)
+            try
             {
-                return NotFound();
+                var highestMeasurement = await weatherService.GetHighestMeasurement(type, startDate, endDate, station);
+                if (highestMeasurement == null)
+                {
+                    return NotFound();
+                }
+                var highestMeasurementDto = mapper.Map<MeasurementDto>(highestMeasurement);
+                return Ok(highestMeasurementDto);
             }
-            var highestMeasurementDto = mapper.Map<MeasurementDto>(highestMeasurement);
-            return Ok(highestMeasurementDto);
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred while retrieving the highest measurement: {ex.Message}");
+            }
         }
 
         [HttpGet("measurements/lowest")]
@@ -74,19 +107,27 @@ namespace WeatherMicroservice.Api.Controllers
         )]
         [SwaggerResponse(200, "The lowest measurement was successfully retrieved.")]
         [SwaggerResponse(404, "No measurements found for the specified criteria.")]
+        [SwaggerResponse(500, "An error occurred while retrieving the lowest measurement.")]
         public async Task<ActionResult> GetLowestMeasurement(
             [FromQuery, Required, SwaggerParameter("The type of measurement.", Required = true)] MeasurementType type,
             [FromQuery, Required, DataType(DataType.Date), SwaggerParameter("The start date for the data range in YYYY-MM-DD format.", Required = true)] DateTime startDate,
             [FromQuery, Required, DataType(DataType.Date), SwaggerParameter("The end date for the data range in YYYY-MM-DD format.", Required = true)] DateTime endDate,
             [FromQuery, SwaggerParameter("Optional station filter.")] Station? station = null)
         {
-            var lowestMeasurement = await weatherService.GetLowestMeasurement(type, startDate, endDate, station);
-            if (lowestMeasurement == null)
+            try
             {
-                return NotFound();
+                var lowestMeasurement = await weatherService.GetLowestMeasurement(type, startDate, endDate, station);
+                if (lowestMeasurement == null)
+                {
+                    return NotFound();
+                }
+                var lowestMeasurementDto = mapper.Map<MeasurementDto>(lowestMeasurement);
+                return Ok(lowestMeasurementDto);
             }
-            var lowestMeasurementDto = mapper.Map<MeasurementDto>(lowestMeasurement);
-            return Ok(lowestMeasurementDto);
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred while retrieving the lowest measurement: {ex.Message}");
+            }
         }
 
         [HttpGet("measurements/average")]
@@ -96,18 +137,26 @@ namespace WeatherMicroservice.Api.Controllers
         )]
         [SwaggerResponse(200, "The average measurement was successfully retrieved.")]
         [SwaggerResponse(404, "No measurements found for the specified criteria.")]
+        [SwaggerResponse(500, "An error occurred while retrieving the average measurement.")]
         public async Task<ActionResult> GetAverageMeasurement(
             [FromQuery, Required, SwaggerParameter("The type of measurement.", Required = true)] MeasurementType type,
             [FromQuery, Required, DataType(DataType.Date), SwaggerParameter("The start date for the data range in YYYY-MM-DD format.", Required = true)] DateTime startDate,
             [FromQuery, Required, DataType(DataType.Date), SwaggerParameter("The end date for the data range in YYYY-MM-DD format.", Required = true)] DateTime endDate,
             [FromQuery, SwaggerParameter("Optional station filter.")] Station? station = null)
         {
-            var averageMeasurement = await weatherService.GetAverageMeasurement(type, startDate, endDate, station);
-            if (averageMeasurement == 0)
+            try
             {
-                return NotFound();
+                var averageMeasurement = await weatherService.GetAverageMeasurement(type, startDate, endDate, station);
+                if (averageMeasurement == 0)
+                {
+                    return NotFound();
+                }
+                return Ok(averageMeasurement);
             }
-            return Ok(averageMeasurement);
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred while retrieving the average measurement: {ex.Message}");
+            }
         }
 
         [HttpGet("measurements/count")]
@@ -117,18 +166,26 @@ namespace WeatherMicroservice.Api.Controllers
         )]
         [SwaggerResponse(200, "The total count of measurements was successfully retrieved.")]
         [SwaggerResponse(404, "No measurements found for the specified criteria.")]
+        [SwaggerResponse(500, "An error occurred while retrieving the measurement count.")]
         public async Task<ActionResult> GetMeasurementCount(
             [FromQuery, Required, SwaggerParameter("The type of measurement.", Required = true)] MeasurementType type,
             [FromQuery, Required, DataType(DataType.Date), SwaggerParameter("The start date for the data range in YYYY-MM-DD format.", Required = true)] DateTime startDate,
             [FromQuery, Required, DataType(DataType.Date), SwaggerParameter("The end date for the data range in YYYY-MM-DD format.", Required = true)] DateTime endDate,
             [FromQuery, SwaggerParameter("Optional station filter.")] Station? station = null)
         {
-            var measurementCount = await weatherService.GetMeasurementCount(type, startDate, endDate, station);
-            if (measurementCount == 0)
+            try
             {
-                return NotFound();
+                var measurementCount = await weatherService.GetMeasurementCount(type, startDate, endDate, station);
+                if (measurementCount == 0)
+                {
+                    return NotFound();
+                }
+                return Ok(measurementCount);
             }
-            return Ok(measurementCount);
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred while retrieving the measurement count: {ex.Message}");
+            }
         }
     }
 }
