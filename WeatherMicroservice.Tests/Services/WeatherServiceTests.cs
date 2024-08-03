@@ -150,7 +150,7 @@ namespace WeatherMicroservice.Tests.Services
             };
 
             mockWeatherRepository.Setup(repo => repo.GetHighestMeasurement(
-                MeasurementType.AirTemperature, It.IsAny<DateTime>(), It.IsAny<DateTime>(), null))
+                MeasurementType.AirTemperature, It.IsAny<DateTime>(), It.IsAny<DateTime>(), Station.Tiefenbrunnen))
                 .ReturnsAsync(expectedMeasurement);
 
             // Act
@@ -182,7 +182,7 @@ namespace WeatherMicroservice.Tests.Services
             };
 
             mockWeatherRepository.Setup(repo => repo.GetLowestMeasurement(
-                MeasurementType.AirTemperature, It.IsAny<DateTime>(), It.IsAny<DateTime>(), null))
+                MeasurementType.AirTemperature, It.IsAny<DateTime>(), It.IsAny<DateTime>(), Station.Tiefenbrunnen))
                 .ReturnsAsync(expectedMeasurement);
 
             // Act
