@@ -1,60 +1,100 @@
-using Microsoft.EntityFrameworkCore;
 using WeatherMicroservice.Core.Entities;
 using WeatherMicroservice.Core.Interfaces;
 using WeatherMicroservice.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
+using WeatherMicroservice.Core.Enums;
 
 namespace WeatherMicroservice.Infrastructure.Repositories
 {
     public class WeatherRepository : IWeatherRepository
     {
-        private readonly WeatherDbContext _context;
+        private readonly WeatherDbContext context;
 
         public WeatherRepository(WeatherDbContext context)
         {
-            _context = context;
+            this.context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
         public async Task SaveMeasurements(List<Measurement> measurements)
         {
             foreach (var measurement in measurements)
             {
-                if (!_context.Measurements.Any(m => m.Timestamp == measurement.Timestamp && m.Station == measurement.Station))
+                // Check if the measurement already exists to avoid duplicates
+                var existingMeasurement = await context.Measurements
+                    .FirstOrDefaultAsync(m => m.Timestamp == measurement.Timestamp && m.Station == measurement.Station && m.Type == measurement.Type);
+
+                if (existingMeasurement == null)
                 {
-                    _context.Measurements.Add(measurement);
+                    await context.Measurements.AddAsync(measurement);
                 }
             }
 
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
         }
 
         public async Task<List<Measurement>> GetMeasurements()
         {
-            return await _context.Measurements.ToListAsync();
+            return await context.Measurements.ToListAsync();
         }
 
-        public async Task<Measurement?> GetHighestMeasurement(string type)
+        public async Task<Measurement?> GetHighestMeasurement(MeasurementType type, DateTime startDate, DateTime endDate, Station? station = null)
         {
-            return await _context.Measurements
-                .OrderByDescending(m => EF.Property<double>(m, type))
-                .FirstOrDefaultAsync();
+            var query = context.Measurements.Where(m => m.Type == type && m.Timestamp >= startDate && m.Timestamp <= endDate);
+
+            if (station != null)
+            {
+                query = query.Where(m => m.Station == station);
+            }
+
+            return await query.OrderByDescending(m => m.Value).FirstOrDefaultAsync();
         }
 
-        public async Task<Measurement?> GetLowestMeasurement(string type)
+        public async Task<Measurement?> GetLowestMeasurement(MeasurementType type, DateTime startDate, DateTime endDate, Station? station = null)
         {
-            return await _context.Measurements
-                .OrderBy(m => EF.Property<double>(m, type))
-                .FirstOrDefaultAsync();
+            var query = context.Measurements.Where(m => m.Type == type && m.Timestamp >= startDate && m.Timestamp <= endDate);
+
+            if (station != null)
+            {
+                query = query.Where(m => m.Station == station);
+            }
+
+            return await query.OrderBy(m => m.Value).FirstOrDefaultAsync();
         }
 
-        public async Task<double> GetAverageMeasurement(string type)
+        public async Task<double> GetAverageMeasurement(MeasurementType type, DateTime startDate, DateTime endDate, Station? station = null)
         {
-            return await _context.Measurements
-                .AverageAsync(m => EF.Property<double>(m, type));
+            var query = context.Measurements.Where(m => m.Type == type && m.Timestamp >= startDate && m.Timestamp <= endDate);
+
+            if (station != null)
+            {
+                query = query.Where(m => m.Station == station);
+            }
+
+            return await query.AverageAsync(m => m.Value);
         }
 
-        public async Task<int> GetMeasurementCount()
+        public async Task<int> GetMeasurementCount(MeasurementType type, DateTime startDate, DateTime endDate, Station? station = null)
         {
-            return await _context.Measurements.CountAsync();
+            var query = context.Measurements.Where(m => m.Type == type && m.Timestamp >= startDate && m.Timestamp <= endDate);
+
+            if (station != null)
+            {
+                query = query.Where(m => m.Station == station);
+            }
+
+            return await query.CountAsync();
+        }
+
+        public async Task<List<Measurement>> GetAllMeasurements(DateTime startDate, DateTime endDate, Station? station = null)
+        {
+            var query = context.Measurements.Where(m => m.Timestamp >= startDate && m.Timestamp <= endDate);
+
+            if (station != null)
+            {
+                query = query.Where(m => m.Station == station);
+            }
+
+            return await query.ToListAsync();
         }
     }
 }

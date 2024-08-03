@@ -1,11 +1,13 @@
 using Microsoft.EntityFrameworkCore;
 using WeatherMicroservice.Core.Entities;
+using WeatherMicroservice.Core.Enums;
 
 namespace WeatherMicroservice.Infrastructure.Data
 {
     public class WeatherDbContext : DbContext
     {
-        public WeatherDbContext(DbContextOptions<WeatherDbContext> options) : base(options)
+        public WeatherDbContext(DbContextOptions<WeatherDbContext> options)
+            : base(options)
         {
         }
 
@@ -14,7 +16,19 @@ namespace WeatherMicroservice.Infrastructure.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            // Add additional configuration if needed
+
+            modelBuilder.Entity<Measurement>(entity =>
+            {
+                entity.Property(e => e.Station)
+                    .HasConversion(
+                        v => v.ToString(),
+                        v => (Station)Enum.Parse(typeof(Station), v));
+
+                entity.Property(e => e.Type)
+                    .HasConversion(
+                        v => v.ToString(),
+                        v => (MeasurementType)Enum.Parse(typeof(MeasurementType), v));
+            });
         }
     }
 }

@@ -1,4 +1,5 @@
 using WeatherMicroservice.Core.Entities;
+using WeatherMicroservice.Core.Enums;
 
 namespace WeatherMicroservice.Core.Interfaces
 {
@@ -6,9 +7,10 @@ namespace WeatherMicroservice.Core.Interfaces
     {
         Task SaveMeasurements(List<Measurement> measurements);
         Task<List<Measurement>> GetMeasurements();
-        Task<Measurement?> GetHighestMeasurement(string type);
-        Task<Measurement?> GetLowestMeasurement(string type);
-        Task<double> GetAverageMeasurement(string type);
-        Task<int> GetMeasurementCount();
+        Task<Measurement?> GetHighestMeasurement(MeasurementType type, DateTime startDate, DateTime endDate, Station? station = null);
+        Task<Measurement?> GetLowestMeasurement(MeasurementType type, DateTime startDate, DateTime endDate, Station? station = null);
+        Task<double> GetAverageMeasurement(MeasurementType type, DateTime startDate, DateTime endDate, Station? station = null);
+        Task<int> GetMeasurementCount(MeasurementType type, DateTime startDate, DateTime endDate, Station? station = null);
+        Task<List<Measurement>> GetAllMeasurements(DateTime startDate, DateTime endDate, Station? station = null);
     }
 }

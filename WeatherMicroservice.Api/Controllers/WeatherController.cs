@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using WeatherMicroservice.Core.Interfaces;
 using Swashbuckle.AspNetCore.Annotations;
+using System.ComponentModel.DataAnnotations;
+using WeatherMicroservice.Core.Enums;
 
 namespace WeatherMicroservice.Api.Controllers
 {
@@ -8,102 +10,118 @@ namespace WeatherMicroservice.Api.Controllers
     [ApiController]
     public class WeatherController : ControllerBase
     {
-        private readonly IWeatherService _weatherService;
-        private readonly IWeatherRepository _weatherRepository;
+        private readonly IWeatherService weatherService;
 
-        public WeatherController(IWeatherService weatherService, IWeatherRepository weatherRepository)
+        public WeatherController(IWeatherService weatherService)
         {
-            _weatherService = weatherService;
-            _weatherRepository = weatherRepository;
+            this.weatherService = weatherService;
         }
 
-        /// <summary>
-        /// Fetch weather data from the specified station within the given date range.
-        /// </summary>
-        /// <param name="station">The station to fetch data from.</param>
-        /// <param name="startDate">The start date for the data range (YYYY-MM-DD).</param>
-        /// <param name="endDate">The end date for the data range (YYYY-MM-DD).</param>
-        /// <param name="sort">The sorting order of the data (default: timestamp_cet desc).</param>
-        /// <param name="limit">The number of rows to return (default: 100).</param>
-        /// <param name="offset">The number of rows to offset (default: 0).</param>
-        /// <returns>An action result indicating success or failure.</returns>
-        [HttpPost("fetch")]
-        [SwaggerOperation(Summary = "Fetch weather data from the specified station within the given date range.")]
-        public async Task<IActionResult> FetchWeatherData([FromQuery] string station, [FromQuery] string startDate, [FromQuery] string endDate, [FromQuery] string sort = "timestamp_cet desc", [FromQuery] int limit = 100, [FromQuery] int offset = 0)
+        [HttpPost("fetch-previous-day")]
+        [SwaggerOperation(Summary = "Fetch weather data for the previous day from specified stations.")]
+        public async Task<IActionResult> FetchPreviousDayData()
         {
-            await _weatherService.FetchAndStoreWeatherData(station, startDate, endDate, sort, limit, offset);
+            await weatherService.FetchAndStorePreviousDayData();
             return Ok();
         }
 
-        /// <summary>
-        /// Get all stored measurements.
-        /// </summary>
-        /// <returns>A list of all measurements.</returns>
         [HttpGet("measurements")]
         [SwaggerOperation(Summary = "Get all stored measurements.")]
-        public async Task<ActionResult> GetMeasurements()
+        public async Task<ActionResult> GetMeasurements(
+            [FromQuery, Required, DataType(DataType.Date), SwaggerParameter("The start date for the data range in YYYY-MM-DD format.", Required = true)] DateTime startDate,
+            [FromQuery, Required, DataType(DataType.Date), SwaggerParameter("The end date for the data range in YYYY-MM-DD format.", Required = true)] DateTime endDate,
+            [FromQuery, SwaggerParameter("Optional station filter.")] Station? station = null)
         {
-            var measurements = await _weatherRepository.GetMeasurements();
+            var measurements = await weatherService.GetAllMeasurements(startDate, endDate, station);
+            if (measurements == null || measurements.Count == 0)
+            {
+                return NotFound();
+            }
             return Ok(measurements);
         }
 
-        /// <summary>
-        /// Get the highest measurement for the specified type.
-        /// </summary>
-        /// <param name="type">The type of measurement (e.g., air_temperature, water_temperature).</param>
-        /// <returns>The highest measurement of the specified type.</returns>
-        [HttpGet("measurements/highest/{type}")]
-        [SwaggerOperation(Summary = "Get the highest measurement for the specified type.")]
-        public async Task<ActionResult> GetHighestMeasurement(string type)
+        [HttpGet("measurements/highest")]
+        [SwaggerOperation(
+            Summary = "Get the highest measurement for the specified type within a date range.",
+            Description = "Retrieves the highest recorded measurement of the specified type within the provided date range. Optionally, filter by station. If no station is provided, data from both stations (Tiefenbrunnen and Mythenquai) will be used."
+        )]
+        [SwaggerResponse(200, "The highest measurement was successfully retrieved.")]
+        [SwaggerResponse(404, "No measurements found for the specified criteria.")]
+        public async Task<ActionResult> GetHighestMeasurement(
+            [FromQuery, Required, SwaggerParameter("The type of measurement.", Required = true)] MeasurementType type,
+            [FromQuery, Required, DataType(DataType.Date), SwaggerParameter("The start date for the data range in YYYY-MM-DD format.", Required = true)] DateTime startDate,
+            [FromQuery, Required, DataType(DataType.Date), SwaggerParameter("The end date for the data range in YYYY-MM-DD format.", Required = true)] DateTime endDate,
+            [FromQuery, SwaggerParameter("Optional station filter.")] Station? station = null)
         {
-            var measurement = await _weatherRepository.GetHighestMeasurement(type);
-            if (measurement == null)
+            var highestMeasurement = await weatherService.GetHighestMeasurement(type, startDate, endDate, station);
+            if (highestMeasurement == null)
             {
                 return NotFound();
             }
-            return Ok(measurement);
+            return Ok(highestMeasurement);
         }
 
-        /// <summary>
-        /// Get the lowest measurement for the specified type.
-        /// </summary>
-        /// <param name="type">The type of measurement (e.g., air_temperature, water_temperature).</param>
-        /// <returns>The lowest measurement of the specified type.</returns>
-        [HttpGet("measurements/lowest/{type}")]
-        [SwaggerOperation(Summary = "Get the lowest measurement for the specified type.")]
-        public async Task<ActionResult> GetLowestMeasurement(string type)
+        [HttpGet("measurements/lowest")]
+        [SwaggerOperation(
+            Summary = "Get the lowest measurement for the specified type within a date range.",
+            Description = "Retrieves the lowest recorded measurement of the specified type within the provided date range. Optionally, filter by station. If no station is provided, data from both stations (Tiefenbrunnen and Mythenquai) will be used."
+        )]
+        [SwaggerResponse(200, "The lowest measurement was successfully retrieved.")]
+        [SwaggerResponse(404, "No measurements found for the specified criteria.")]
+        public async Task<ActionResult> GetLowestMeasurement(
+            [FromQuery, Required, SwaggerParameter("The type of measurement.", Required = true)] MeasurementType type,
+            [FromQuery, Required, DataType(DataType.Date), SwaggerParameter("The start date for the data range in YYYY-MM-DD format.", Required = true)] DateTime startDate,
+            [FromQuery, Required, DataType(DataType.Date), SwaggerParameter("The end date for the data range in YYYY-MM-DD format.", Required = true)] DateTime endDate,
+            [FromQuery, SwaggerParameter("Optional station filter.")] Station? station = null)
         {
-            var measurement = await _weatherRepository.GetLowestMeasurement(type);
-            if (measurement == null)
+            var lowestMeasurement = await weatherService.GetLowestMeasurement(type, startDate, endDate, station);
+            if (lowestMeasurement == null)
             {
                 return NotFound();
             }
-            return Ok(measurement);
+            return Ok(lowestMeasurement);
         }
 
-        /// <summary>
-        /// Get the average measurement for the specified type.
-        /// </summary>
-        /// <param name="type">The type of measurement (e.g., air_temperature, water_temperature).</param>
-        /// <returns>The average measurement of the specified type.</returns>
-        [HttpGet("measurements/average/{type}")]
-        [SwaggerOperation(Summary = "Get the average measurement for the specified type.")]
-        public async Task<ActionResult> GetAverageMeasurement(string type)
+        [HttpGet("measurements/average")]
+        [SwaggerOperation(
+            Summary = "Get the average measurement for the specified type within a date range.",
+            Description = "Retrieves the average recorded measurement of the specified type within the provided date range. Optionally, filter by station. If no station is provided, data from both stations (Tiefenbrunnen and Mythenquai) will be used."
+        )]
+        [SwaggerResponse(200, "The average measurement was successfully retrieved.")]
+        [SwaggerResponse(404, "No measurements found for the specified criteria.")]
+        public async Task<ActionResult> GetAverageMeasurement(
+            [FromQuery, Required, SwaggerParameter("The type of measurement.", Required = true)] MeasurementType type,
+            [FromQuery, Required, DataType(DataType.Date), SwaggerParameter("The start date for the data range in YYYY-MM-DD format.", Required = true)] DateTime startDate,
+            [FromQuery, Required, DataType(DataType.Date), SwaggerParameter("The end date for the data range in YYYY-MM-DD format.", Required = true)] DateTime endDate,
+            [FromQuery, SwaggerParameter("Optional station filter.")] Station? station = null)
         {
-            var average = await _weatherRepository.GetAverageMeasurement(type);
-            return Ok(average);
+            var averageMeasurement = await weatherService.GetAverageMeasurement(type, startDate, endDate, station);
+            if (averageMeasurement == 0)
+            {
+                return NotFound();
+            }
+            return Ok(averageMeasurement);
         }
 
-        /// <summary>
-        /// Get the total count of stored measurements.
-        /// </summary>
-        /// <returns>The total count of stored measurements.</returns>
         [HttpGet("measurements/count")]
-        [SwaggerOperation(Summary = "Get the total count of stored measurements.")]
-        public async Task<ActionResult> GetMeasurementCount()
+        [SwaggerOperation(
+            Summary = "Get the total count of stored measurements within a date range.",
+            Description = "Retrieves the total count of measurements of the specified type within the provided date range. Optionally, filter by station. If no station is provided, data from both stations (Tiefenbrunnen and Mythenquai) will be used."
+        )]
+        [SwaggerResponse(200, "The total count of measurements was successfully retrieved.")]
+        [SwaggerResponse(404, "No measurements found for the specified criteria.")]
+        public async Task<ActionResult> GetMeasurementCount(
+            [FromQuery, Required, SwaggerParameter("The type of measurement.", Required = true)] MeasurementType type,
+            [FromQuery, Required, DataType(DataType.Date), SwaggerParameter("The start date for the data range in YYYY-MM-DD format.", Required = true)] DateTime startDate,
+            [FromQuery, Required, DataType(DataType.Date), SwaggerParameter("The end date for the data range in YYYY-MM-DD format.", Required = true)] DateTime endDate,
+            [FromQuery, SwaggerParameter("Optional station filter.")] Station? station = null)
         {
-            var count = await _weatherRepository.GetMeasurementCount();
-            return Ok(count);
+            var measurementCount = await weatherService.GetMeasurementCount(type, startDate, endDate, station);
+            if (measurementCount == 0)
+            {
+                return NotFound();
+            }
+            return Ok(measurementCount);
         }
     }
 }
