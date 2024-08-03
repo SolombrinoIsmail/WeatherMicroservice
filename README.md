@@ -27,7 +27,7 @@ This microservice retrieves weather data from specific stations and stores it in
 
 1. Clone the repository:
     ```sh
-    git clone https://github.com/yourusername/weather-microservice.git
+    git clone https://github.com/SolombrinoIsmail/weather-microservice.git
     cd weather-microservice
     ```
 
