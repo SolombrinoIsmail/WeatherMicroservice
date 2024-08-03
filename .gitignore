@@ -101,12 +101,12 @@ Migrations/
 # Azure Pipelines
 azure-pipelines.yml
 
-# Docker
-**/[Dd]ockerfile
-**/docker-compose.yml
-**/docker-compose.*.yml
-docker-compose.override.yml
-.dockerignore
+# # Docker Normally we ignore this, but for simplicity of this task I will add the files to the Repo.
+# **/[Dd]ockerfile
+# **/docker-compose.yml
+# **/docker-compose.*.yml
+# docker-compose.override.yml
+# .dockerignore
 
 # Local History
 .localhistory
