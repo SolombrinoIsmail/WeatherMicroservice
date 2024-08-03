@@ -49,7 +49,8 @@ namespace WeatherMicroservice.Tests.Controllers
             // Arrange
             var measurements = new List<Measurement>
             {
-                new() {
+                new()
+                {
                     Id = 1,
                     Station = Station.Tiefenbrunnen,
                     Timestamp = DateTime.UtcNow,
@@ -71,6 +72,8 @@ namespace WeatherMicroservice.Tests.Controllers
             Assert.Equal((int)HttpStatusCode.OK, okResult.StatusCode);
             var returnValue = Assert.IsType<List<MeasurementDto>>(okResult.Value);
             Assert.Equal(measurements.Count, returnValue.Count);
+            Assert.Equal(measurements[0].Id, returnValue[0].Id);
+            Assert.Equal(measurements[0].Station, returnValue[0].Station);
         }
 
         [Fact]
@@ -116,6 +119,10 @@ namespace WeatherMicroservice.Tests.Controllers
             Assert.Equal((int)HttpStatusCode.OK, okResult.StatusCode);
             var returnValue = Assert.IsType<MeasurementDto>(okResult.Value);
             Assert.Equal(measurement.Id, returnValue.Id);
+            Assert.Equal(measurement.Station, returnValue.Station);
+            Assert.Equal(measurement.Type, returnValue.Type);
+            Assert.Equal(measurement.Value, returnValue.Value);
+            Assert.Equal(measurement.Unit, returnValue.Unit);
         }
 
         [Fact]
@@ -161,6 +168,10 @@ namespace WeatherMicroservice.Tests.Controllers
             Assert.Equal((int)HttpStatusCode.OK, okResult.StatusCode);
             var returnValue = Assert.IsType<MeasurementDto>(okResult.Value);
             Assert.Equal(measurement.Id, returnValue.Id);
+            Assert.Equal(measurement.Station, returnValue.Station);
+            Assert.Equal(measurement.Type, returnValue.Type);
+            Assert.Equal(measurement.Value, returnValue.Value);
+            Assert.Equal(measurement.Unit, returnValue.Unit);
         }
 
         [Fact]

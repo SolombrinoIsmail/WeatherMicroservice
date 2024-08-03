@@ -238,6 +238,7 @@ namespace WeatherMicroservice.Tests.Services
             var measurements = new List<Measurement>
             {
                 new() {
+                    Id = 1,
                     Station = Station.Tiefenbrunnen,
                     Timestamp = DateTime.UtcNow,
                     Type = MeasurementType.AirTemperature,
@@ -245,6 +246,7 @@ namespace WeatherMicroservice.Tests.Services
                     Unit = "°C"
                 },
                 new() {
+                    Id = 2,
                     Station = Station.Mythenquai,
                     Timestamp = DateTime.UtcNow,
                     Type = MeasurementType.WaterTemperature,
