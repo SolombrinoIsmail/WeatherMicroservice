@@ -95,8 +95,8 @@ $RECYCLE.BIN/
 # ASP.NET Scaffolding
 ScaffoldingReadMe.txt
 
-# Entity Framework Migrations
-Migrations/
+# Entity Framework Migrations Normally we ignore this, but for simplicity of this task I will add the files to the Repo.
+# Migrations/
 
 # Azure Pipelines
 azure-pipelines.yml
